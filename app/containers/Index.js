@@ -29,6 +29,7 @@ class Row extends React.PureComponent {
             quantity  : React.PropTypes.number,
             investment: React.PropTypes.number,
         }).isRequired,
+        currency        : React.PropTypes.string.isRequired,
         prices          : React.PropTypes.object.isRequired,
         updateCoin      : React.PropTypes.func.isRequired,
         updateQuantity  : React.PropTypes.func.isRequired,
@@ -42,19 +43,27 @@ class Row extends React.PureComponent {
         const roi       = ((value - this.props.row.investment) / this.props.row.investment * 100).toFixed(2)
 
         return (
-            <tr>
-                <td>
-                    <CoinSelector value={this.props.row.coin} onChange={e => this.props.updateCoin(e.target.value)}/>
-                </td>
-                <td><input type="number" min={0} value={this.props.row.quantity}
-                           onChange={e => this.props.updateQuantity(+e.target.value)}/></td>
-                <td>{unitPrice.toFixed(2)}</td>
-                <td>{value.toFixed(2)}</td>
-                <td><input type="number" min={0} value={this.props.row.investment}
-                           onChange={e => this.props.updateInvestment(+e.target.value)}/></td>
-                <td>{this.props.row.investment ? benefit.toFixed(2) : '-'}</td>
-                <td>{this.props.row.investment ? `${roi}%` : '-'}</td>
-            </tr>
+            <div style={{borderWidth: 1, borderStyle: 'solid', borderColor: 'black', padding: 5, marginTop: 5}}>
+                <div>
+                    I bought <input type="number" min={0} value={this.props.row.quantity}
+                                    onChange={e => this.props.updateQuantity(+e.target.value)}/>
+                    <CoinSelector value={this.props.row.coin}
+                                  onChange={e => this.props.updateCoin(e.target.value)}/>&nbsp;
+                    for a total price of <input type="number" min={0} value={this.props.row.investment}
+                                                onChange={e => this.props.updateInvestment(+e.target.value)}/> {this.props.currency}.
+                </div>
+                <div>
+                    <div>
+                        The current unit price is <span>{unitPrice.toFixed(2)} {this.props.currency}</span> which values
+                        my
+                        investment at <span>{value.toFixed(2)} {this.props.currency}</span>.
+                    </div>
+                    <div>
+                        Benefit: {this.props.row.investment ? `${benefit.toFixed(2)} ${this.props.currency}` : '-'}</div>
+                    <div>ROI: <span>{this.props.row.investment ? `${roi}%` : '-'}</span></div>
+                </div>
+
+            </div>
         )
     }
 }
@@ -86,44 +95,31 @@ class Index extends React.PureComponent {
                                                                           value={x}>{supportedCurrencies[x]}</option>)
                     }
                 </select>
-                <table>
-                    <thead>
-                    <tr>
-                        <td>Name</td>
-                        <td>Quantity</td>
-                        <td>{`Unit price (${currency})`}</td>
-                        <td>{`Value (${currency})`}</td>
-                        <td>{`Investment (${currency})`}</td>
-                        <td>{`Benefit (${currency})`}</td>
-                        <td>ROI</td>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {
-                        this.props.rows.map((x, i) => {
-                            const row = this.props.rows[i]
-                            return (
-                                <Row row={row}
-                                     prices={this.props.prices}
-                                     updateCoin={coin => this.props.updateRow(i, {coin})}
-                                     updateQuantity={quantity => this.props.updateRow(i, {quantity})}
-                                     updateInvestment={investment => this.props.updateRow(i, {investment})}
-                                />
-                            )
-                        })
-                    }
-                    </tbody>
-                    <button onClick={() => this.props.addRow()}>+</button>
-                    <tr>
-                        <td>Total</td>
-                        <td></td>
-                        <td></td>
-                        <td>{totalValue.toFixed(2)}</td>
-                        <td>{totalInvestment.toFixed(2)}</td>
-                        <td>{totalBenefit.toFixed(2)}</td>
-                        <td>{totalROI.toFixed(2)}%</td>
-                    </tr>
-                </table>
+                <div style={{display: 'flex', flexDirection: 'row'}}>
+                    <div>
+                        {
+                            this.props.rows.map((x, i) => {
+                                const row = this.props.rows[i]
+                                return (
+                                    <Row row={row}
+                                         prices={this.props.prices}
+                                         updateCoin={coin => this.props.updateRow(i, {coin})}
+                                         updateQuantity={quantity => this.props.updateRow(i, {quantity})}
+                                         updateInvestment={investment => this.props.updateRow(i, {investment})}
+                                         currency={currency}
+                                    />
+                                )
+                            })
+                        }
+                        <button onClick={() => this.props.addRow()} style={{marginTop: 5}}>+ Add line</button>
+                    </div>
+                    <div style={{flex: 1, justifyContent: 'center', alignItems: 'center', marginLeft: 5, flexDirection: 'column'}}>
+                        <div>Total value: <span>{totalValue.toFixed(2)}</span></div>
+                        <div>Total investment: <span>{totalInvestment.toFixed(2)}</span></div>
+                        <div>Total benefit: <span>{totalBenefit.toFixed(2)}</span></div>
+                        <div>Total ROI: <span>{totalROI.toFixed(2)}%</span></div>
+                    </div>
+                </div>
             </div>
         );
     }

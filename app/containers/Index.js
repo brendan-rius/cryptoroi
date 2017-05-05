@@ -2,6 +2,7 @@ import React from 'react';
 import {connect} from 'react-redux';
 import CoinActions from '../redux/coins'
 import supportedCoins from '../coins'
+import supportedCurrencies from '../currencies'
 
 class CoinSelector extends React.PureComponent {
     static propTypes = {
@@ -65,17 +66,35 @@ class Index extends React.PureComponent {
     };
 
     render() {
+        let totalValue      = 0
+        let totalInvestment = 0
+
+        this.props.rows.forEach(row => {
+            totalValue += row.quantity * this.props.prices[row.coin]
+            totalInvestment += row.investment
+        })
+
+        const totalBenefit = totalValue - totalInvestment
+        const totalROI     = (totalValue - totalInvestment) / totalInvestment * 100
+
+        const currency = supportedCurrencies[this.props.currency]
         return (
             <div>
+                <select value={this.props.currency} onChange={e => this.props.changeCurrency(e.target.value)}>
+                    {
+                        Object.keys(supportedCurrencies).map(x => <option key={x}
+                                                                          value={x}>{supportedCurrencies[x]}</option>)
+                    }
+                </select>
                 <table>
                     <thead>
                     <tr>
                         <td>Name</td>
                         <td>Quantity</td>
-                        <td>Unit price</td>
-                        <td>Value</td>
-                        <td>Investment</td>
-                        <td>Benefit</td>
+                        <td>{`Unit price (${currency})`}</td>
+                        <td>{`Value (${currency})`}</td>
+                        <td>{`Investment (${currency})`}</td>
+                        <td>{`Benefit (${currency})`}</td>
                         <td>ROI</td>
                     </tr>
                     </thead>
@@ -95,6 +114,15 @@ class Index extends React.PureComponent {
                     }
                     </tbody>
                     <button onClick={() => this.props.addRow()}>+</button>
+                    <tr>
+                        <td>Total</td>
+                        <td></td>
+                        <td></td>
+                        <td>{totalValue.toFixed(2)}</td>
+                        <td>{totalInvestment.toFixed(2)}</td>
+                        <td>{totalBenefit.toFixed(2)}</td>
+                        <td>{totalROI.toFixed(2)}%</td>
+                    </tr>
                 </table>
             </div>
         );
@@ -103,15 +131,17 @@ class Index extends React.PureComponent {
 
 const mapStateToProps = (state) => {
     return {
-        rows  : state.coins.rows,
-        prices: state.coins.prices,
+        rows    : state.coins.rows,
+        prices  : state.coins.prices,
+        currency: state.coins.currency,
     };
 };
 
 const mapDispatchToProps = (dispatch) => {
     return {
-        addRow   : () => dispatch(CoinActions.addRow()),
-        updateRow: (i, update) => dispatch(CoinActions.updateRow(i, update))
+        addRow        : () => dispatch(CoinActions.addRow()),
+        updateRow     : (i, update) => dispatch(CoinActions.updateRow(i, update)),
+        changeCurrency: (currency) => dispatch(CoinActions.changeCurrency(currency))
     };
 };
 

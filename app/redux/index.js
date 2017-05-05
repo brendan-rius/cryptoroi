@@ -1,6 +1,8 @@
 import {combineReducers} from 'redux'
-import { routerReducer as routing } from 'react-router-redux';
+import {routerReducer} from 'react-router-redux';
+import {reducer as coinReducer} from '../redux/coins'
 
 export default combineReducers({
-    routing
+    routing: routerReducer,
+    coins  : coinReducer,
 });
